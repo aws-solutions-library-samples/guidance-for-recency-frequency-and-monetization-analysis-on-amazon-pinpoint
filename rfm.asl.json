@@ -1,0 +1,181 @@
+{
+  "Comment": "A state machine that does RFM analysis on event data.",
+  "StartAt": "Data Preprocessing Job",
+  "States": {
+    "Data Preprocessing Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
+      "Parameters": {
+        "ProcessingJobName.$": "States.Format('RFM-Processing-{}', $.Partition)",
+        "ProcessingInputs": [
+          {
+            "InputName": "Code",
+            "AppManaged": false,
+            "S3Input": {
+              "S3Uri.$": "States.Format('s3://{}/code/preprocess/', $.InputBucket)",
+              "LocalPath": "/opt/ml/processing/input/code",
+              "S3DataType": "S3Prefix",
+              "S3InputMode": "File",
+              "S3DataDistributionType": "FullyReplicated",
+              "S3CompressionType": "None"
+            }
+          }
+        ],
+        "ProcessingOutputConfig": {
+          "Outputs": [
+            {
+              "OutputName": "processed_output",
+              "AppManaged": false,
+              "S3Output": {
+                "S3Uri.$": "States.Format('s3://{}/runs/{}/temp/data', $.InputBucket, $.Partition)",
+                "LocalPath": "/opt/ml/processing/output",
+                "S3UploadMode": "EndOfJob"
+              }
+            }
+          ]
+        },
+        "AppSpecification": {
+          "ImageUri": "${PreprocessingJobScikitPath}",
+          "ContainerEntrypoint": [
+            "python3",
+            "/opt/ml/processing/input/code/entry_point.py"
+          ]
+        },
+        "RoleArn": "${SagemakerRoleArn}",
+        "Environment": {
+          "S3_BUCKET.$": "$.InputBucket",
+          "DATA_SOURCE.$": "$.FullPath",
+          "PARTITION.$": "$.Partition"
+        },
+        "ProcessingResources": {
+          "ClusterConfig": {
+            "InstanceCount": 1,
+            "InstanceType": "ml.m5.large",
+            "VolumeSizeInGB": 30
+          }
+        }
+      },
+      "Next": "Data Clustering Job",
+      "ResultPath": null,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Fail"
+        }
+      ]
+    },
+    "Data Clustering Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sagemaker:createTrainingJob.sync",
+      "Parameters": {
+        "AlgorithmSpecification": {
+          "TrainingImage": "${ClusteringJobScikitPath}",
+          "TrainingInputMode": "File"
+        },
+        "OutputDataConfig": {
+          "S3OutputPath.$": "States.Format('s3://{}/runs/{}/temp/clustering/output_data_config', $.InputBucket, $.Partition)"
+        },
+        "StoppingCondition": {
+          "MaxRuntimeInSeconds": 3600
+        },
+        "ResourceConfig": {
+          "InstanceCount": 1,
+          "InstanceType": "ml.m5.large",
+          "VolumeSizeInGB": 30
+        },
+        "RoleArn": "${SagemakerRoleArn}",
+        "Environment": {
+          "S3_BUCKET.$": "$.InputBucket",
+          "DATA_SOURCE.$": "$.FullPath",
+          "PARTITION.$": "$.Partition"
+        },
+        "HyperParameters": {
+          "nclusters": "7",
+          "sagemaker_submit_directory.$": "States.Format('\"s3://{}/code/clustering/clustering.tar.gz\"', $.InputBucket)",
+          "sagemaker_program": "\"kmeans.py\"",
+          "sagemaker_container_log_level": "20",
+          "sagemaker_job_name.$": "States.Format('\"sagemaker-scikit-learn-{}\"', $.Partition)",
+          "sagemaker_region.$": "States.Format('\"{}\"', $.Region)"
+        },
+        "TrainingJobName.$": "States.Format('RFM-Clustering-{}', $.Partition)",
+        "DebugHookConfig": {
+          "S3OutputPath.$": "States.Format('s3://{}/runs/{}/clustering/debug_hook_config/', $.InputBucket, $.Partition)"
+        }
+      },
+      "Next": "Data Postprocessing Job",
+      "ResultPath": null,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Fail"
+        }
+      ]
+    },
+    "Data Postprocessing Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${GlueJobName}",
+        "Arguments": {
+          "--Partition.$": "$.Partition",
+          "--Bucket.$": "$.InputBucket",
+          "--Key.$": "$.InputKey"
+        }
+      },
+      "Next": "Endpoint Import Job",
+      "ResultPath": null,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Fail"
+        }
+      ]
+    },
+    "Endpoint Import Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "${PinpointRFMImportEndpoints}"
+      },
+      "Next": "Create Segment Job",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Fail"
+        }
+      ]
+    },
+    "Create Segment Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "${PinpointRFMCreateSegments}"
+      },
+      "End": true,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Fail"
+        }
+      ]
+    },
+    "Fail": {
+      "Type": "Fail"
+    }
+  }
+}
+
