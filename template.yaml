@@ -44,6 +44,8 @@ Mappings:
 Resources:
   PinpointRFMUploadBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -66,6 +68,24 @@ Resources:
         LogFilePrefix: access-logs
       VersioningConfiguration:
         Status: Enabled
+  PinpointRFMUploadBucketPolicy:
+      DependsOn:
+        - PinpointRFMUploadBucket
+      Type: 'AWS::S3::BucketPolicy'
+      Properties:
+        Bucket: !Ref PinpointRFMUploadBucket
+        PolicyDocument:
+          Statement:
+            - Action:
+                - 's3:GetObject'
+                - 's3:PutObject'
+              Condition:
+                Bool:
+                  'aws:SecureTransport': false
+              Effect: Deny
+              Principal: '*'
+              Resource: !Sub 'arn:${AWS::Partition}:s3:::${PinpointRFMUploadBucket}/*'
+              Sid: DenyUnencryptedConnections
   PinpointRFMUploadTrigger:
     Type: AWS::Serverless::Function
     Metadata:
@@ -132,7 +152,7 @@ Resources:
       DefinitionUri: rfm.asl.json
       DefinitionSubstitutions:
         SagemakerRoleArn: !GetAtt SagemakerExecutionRole.Arn
-        SagemakerRegion: ${AWS::Region}
+        SagemakerRegion: !Sub ${AWS::Region}
         GlueJobName: !Join ['-', ['PinpointRFMPostprocessingJob', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
         PreprocessingJobScikitPath: !Sub
           - '${Base}.dkr.ecr.${AWS::Region}.amazonaws.com/sagemaker-scikit-learn:0.20.0-cpu-py3'
@@ -142,7 +162,16 @@ Resources:
           - Base: !FindInMap [PublicScikitImages, !Ref AWS::Region, AccountId]
         PinpointRFMImportEndpoints: !GetAtt PinpointRFMImportEndpoints.Arn
         PinpointRFMCreateSegments: !GetAtt PinpointRFMSegmentCreate.Arn
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt PinpointRFMStateMachineLogGroup.Arn
+        IncludeExecutionData: false
       Role: !GetAtt PinpointRFMStateMachineExecutionRole.Arn
+  PinpointRFMStateMachineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 365
   PinpointRFMPostprocessingJob:
     Type: AWS::Glue::Job
     Properties:
@@ -150,8 +179,8 @@ Resources:
       Command:
         Name: glueetl
         ScriptLocation: !Sub 's3://${PinpointRFMS3BucketName}/code/postprocess/merge.py'
-      DefaultArguments:
-        "--job-bookmark-option": "job-bookmark-enable"
+      # DefaultArguments:
+      #   "--job-bookmark-option": "job-bookmark-enable"
       ExecutionProperty:
         MaxConcurrentRuns: 1
       MaxRetries: 0
