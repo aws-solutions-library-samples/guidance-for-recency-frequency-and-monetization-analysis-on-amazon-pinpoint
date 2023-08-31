@@ -10,7 +10,6 @@ class Feature_Engineering:
         self.rfm = self.merge_features()
         self.bucketing_rfm()
 
-
     def calculate_recency(self) -> pd.DataFrame:
         print(f'Calculating recency...', end='\t')
         df = self.data[self.data.EventName.isin(['processed', 'viewed', 'purchased'])].copy()
@@ -42,7 +41,6 @@ class Feature_Engineering:
         return monetary_df
 
     def merge_features(self) -> pd.DataFrame:
-#         assert (self.monetary_df.shape[0] == self.recency_df.shape[0]) & (self.recency_df.shape[0] == self.frequency_df.shape[0]), 'The number of rows are not matching post feature engineering, hence aborting.'
         print(f'Merging Recency, Frequency and Monetary Features...', end='\t')
         rfm = self.recency_df.merge(self.frequency_df, on='CustomerID', how='left').merge(self.monetary_df, on='CustomerID', how='left')
         rfm.monetary.fillna(0, inplace=True)
@@ -52,23 +50,11 @@ class Feature_Engineering:
     ###Benchmark to give score for recency indicator
     def r_score(self, v, quantiles):
         dictionary = quantiles['recency']
-        if v <= dictionary[.1]:
-            return 10
-        elif dictionary[.1] < v <= dictionary[.2]:
-            return 9
-        elif dictionary[.2] < v <= dictionary[.3]:
-            return 8
-        elif dictionary[.3] < v <= dictionary[.4]:
-            return 7
-        elif dictionary[.4] < v <= dictionary[.5]:
-            return 6
-        elif dictionary[.5] < v <= dictionary[.6]:
-            return 5
-        elif dictionary[.6] < v <= dictionary[.7]:
+        if v <= dictionary[.25]:
             return 4
-        elif dictionary[.7] < v <= dictionary[.8]:
+        elif dictionary[.25] < v <= dictionary[.5]:
             return 3
-        elif dictionary[.8] < v <= dictionary[.9]:
+        elif dictionary[.5] < v <= dictionary[.75]:
             return 2
         else:
             return 1
@@ -77,55 +63,31 @@ class Feature_Engineering:
     ###Benchmark to give score for frequency indicator.   
     def f_score(self, v, quantiles): 
         dictionary = quantiles['frequency']
-        if v <= dictionary[.1]:
+        if v <= dictionary[.25]:
             return 1
-        elif dictionary[.1] < v <= dictionary[.2]:
+        elif dictionary[.25] < v <= dictionary[.5]:
             return 2
-        elif dictionary[.2] < v <= dictionary[.3]:
+        elif dictionary[.5] < v <= dictionary[.75]:
             return 3
-        elif dictionary[.3] < v <= dictionary[.4]:
-            return 4
-        elif dictionary[.4] < v <= dictionary[.5]:
-            return 5
-        elif dictionary[.5] < v <= dictionary[.6]:
-            return 6
-        elif dictionary[.6] < v <= dictionary[.7]:
-            return 7
-        elif dictionary[.7] < v <= dictionary[.8]:
-            return 8
-        elif dictionary[.8] < v <= dictionary[.9]:
-            return 9
         else:
-            return 10
+            return 4
         
     ###Benchmark to give score for frequency indicator.   
     def m_score(self, v, quantiles): 
         dictionary = quantiles['monetary']
-        if v <= dictionary[.1]:
+        if v <= dictionary[.25]:
             return 1
-        elif dictionary[.1] < v <= dictionary[.2]:
+        elif dictionary[.25] < v <= dictionary[.5]:
             return 2
-        elif dictionary[.2] < v <= dictionary[.3]:
+        elif dictionary[.5] < v <= dictionary[.75]:
             return 3
-        elif dictionary[.3] < v <= dictionary[.4]:
-            return 4
-        elif dictionary[.4] < v <= dictionary[.5]:
-            return 5
-        elif dictionary[.5] < v <= dictionary[.6]:
-            return 6
-        elif dictionary[.6] < v <= dictionary[.7]:
-            return 7
-        elif dictionary[.7] < v <= dictionary[.8]:
-            return 8
-        elif dictionary[.8] < v <= dictionary[.9]:
-            return 9
         else:
-            return 10
+            return 4
 
     def bucketing_rfm(self) -> None:
         print(f'Bucketing RFM values...', end='\t')
         ###Calculating quantile values
-        quantiles = self.rfm[['recency', 'frequency', 'monetary']].quantile([.1, .2, .3, .4, .5, .6, .7, .8, .9]).to_dict()
+        quantiles = self.rfm[['recency', 'frequency', 'monetary']].quantile([.25, .5, .75]).to_dict()
         self.rfm['r_score'] = self.rfm.recency.apply(lambda x: self.r_score(x, quantiles))
         self.rfm['f_score'] = self.rfm.frequency.apply(lambda x: self.f_score(x, quantiles))
         self.rfm['m_score'] = self.rfm.monetary.apply(lambda x: self.m_score(x, quantiles))
