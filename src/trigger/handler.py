@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     input_bucket = event['Records'][0]['s3']['bucket']['name']
     input_key = event['Records'][0]['s3']['object']['key']
     full_path = 's3://' + input_bucket + '/' + input_key
-    partition_key = hashlib.md5(full_path.encode('utf-8')).hexdigest()
+    partition_key = hashlib.md5(full_path.encode('utf-8')).hexdigest() # nosec
     region = event['Records'][0]['awsRegion']
 
     try:

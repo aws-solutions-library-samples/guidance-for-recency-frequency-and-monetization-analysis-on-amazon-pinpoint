@@ -6,36 +6,36 @@ import os
 
 segment_filters = {
     'Champions': {
-        'Name': '_RFM_ Champions',
+        'Name': '_RFM_Champions',
         'Metrics': {
             'RScore': {
-                'ComparisonOperator': 'GREATER_THAN',
-                'Value': 7
+                'ComparisonOperator': 'GREATER_THAN_OR_EQUAL',
+                'Value': 3
             },
             'FScore': {
-                'ComparisonOperator': 'GREATER_THAN',
-                'Value': 7
+                'ComparisonOperator': 'GREATER_THAN_OR_EQUAL',
+                'Value': 3
             },
             'MScore': {
-                'ComparisonOperator': 'GREATER_THAN',
-                'Value': 7
+                'ComparisonOperator': 'GREATER_THAN_OR_EQUAL',
+                'Value': 3
             }
         }
     },
     'Dormant': {
-        'Name': '_RFM_ Dormant',
+        'Name': '_RFM_Dormant',
         'Metrics': {
             'RScore': {
-                'ComparisonOperator': 'LESS_THAN',
-                'Value': 3
+                'ComparisonOperator': 'LESS_THAN_OR_EQUAL',
+                'Value': 2
             },
             'FScore': {
-                'ComparisonOperator': 'LESS_THAN',
-                'Value': 3
+                'ComparisonOperator': 'LESS_THAN_OR_EQUAL',
+                'Value': 2
             },
             'MScore': {
-                'ComparisonOperator': 'GREATER_THAN',
-                'Value': 5
+                'ComparisonOperator': 'LESS_THAN_OR_EQUAL',
+                'Value': 2
             }
         }
     },
@@ -44,15 +44,15 @@ segment_filters = {
         'Metrics': {
             'RScore': {
                 'ComparisonOperator': 'LESS_THAN',
-                'Value': 3
+                'Value': 1.5
             },
             'FScore': {
                 'ComparisonOperator': 'GREATER_THAN',
-                'Value': 5
+                'Value': 1.5
             },
             'MScore': {
                 'ComparisonOperator': 'GREATER_THAN',
-                'Value': 7
+                'Value': 1.5
             }
         }
     },
