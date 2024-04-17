@@ -11,7 +11,7 @@ The architecture for generating Recency, Frequency, Monetary (RFM) score based  
 - Install [AWS Serverless Application Model (SAM)](https://aws.amazon.com/serverless/sam/) along with the AWS CLI and Docker.
 - Ensure that your environment is configured with the correct AWS credentials.
 - Deploy the project using `./deploy.sh` and answer the configuration questions during the deployment.
-- You will be asked to provide the following information during the first deployment: `AWS REGION`, `AMAZON S3 BUCKET NAME`, `AMAZON PINPOINT APPLICATION ID`.
+- You will be asked to provide the following information during the first deployment: `AWS REGION`, `AMAZON S3 BUCKET NAME`, `AMAZON PINPOINT APPLICATION ID` and `LOG_RETENTION_PERIOD`.
 
 ## Input Data
 This guidance expects input data in the following format to be uploaded to the `BUCKET_NAME/uploads/` folder. You can use the sample files provided in this repository to test the solution.

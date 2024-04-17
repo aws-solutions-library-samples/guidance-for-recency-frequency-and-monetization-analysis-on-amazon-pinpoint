@@ -11,6 +11,12 @@ Parameters:
   PinpointRFMApplicationId:
     Type: String
     Description: Application ID of the Pinpoint project
+  LogRetentionPeriod:
+    Type: Number
+    Default: 365
+    Description: Days to keep application logs
+    MinValue: 1
+    MaxValue: 3650
 Mappings:
   PublicScikitImages:
     us-west-1:
@@ -171,7 +177,7 @@ Resources:
   PinpointRFMStateMachineLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 365
+      RetentionInDays: !Ref LogRetentionPeriod 
   PinpointRFMPostprocessingJob:
     Type: AWS::Glue::Job
     Properties:
