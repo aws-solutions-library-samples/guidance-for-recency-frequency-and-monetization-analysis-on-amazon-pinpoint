@@ -1,14 +1,13 @@
 # Guidance for RFM Segmentation on Amazon Pinpoint
 
 ## Table of Contents
-- Overview
-- Cost
-- Prerequisites
-- Deployment Steps
-- Deployment Validation
-- Running the Guidance
-- Next Steps
-- Cleanup
+- [Overview](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#overview)
+- [Prerequisites](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#prerequisites)
+- [Deployment Steps](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#deployment-steps)
+- [Deployment Validation](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#deployment-validation)
+- [Running the Guidance](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#running-the-guidance)
+- [Cleanup](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#cleanup)
+- [Authors](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#authors)
 
 ## Overview
 RFM (Recency, Frequency and Monetization) analysis and segmentation is an increasingly popular method to identify CLV (Customer Life Value), group customers cohorts and increase effectiveness of marketing strategies. Recency - How much time has elapsed since a customer’s last activity or transaction with the brand. Frequency - How often has a customer transacted or interacted with the brand during a particular period of time. Monetization - How much a customer has spent with the brand during a particular period of time.
@@ -48,8 +47,8 @@ The following regions are currently supported:
 ## Deployment Steps
 - Clone the repository to your local environment and `cd` to the project root
 ```
-git clone xxx
-cd xxx
+git clone git@github.com:aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint.git
+cd guidance-for-rfm-segmentation-on-amazon-pinpoint
 ```
 - Deploy the project 
 ```
@@ -95,8 +94,6 @@ Once the solution is deployed successfully and the input file is ready, follow t
 - Navigate to AWS Step Functions console and click on the `PinpointRFMStateMachine-*` state machine to view execution details.
 - To view details on the individual steps, navigate to the Amazon Sagemaker, AWS Glue or AWS Lambda, Amazon Pinpoint console.
 - After the AWS Step Functions workflow is completed, you can navigate to the Amazon Pinpoint console, select the Project you had chosen during deployment and click on `Segments` to view the RFM based segments that are created. All RFM segments created by this solution will be prefixed with `_RFM_`.
-
-## Next Steps
 
 ## Cleanup
 This solution deploys multiple AWS resources that incur costs. You can delete the solution by running `sam delete` on the root directory of the project. Any resources that are not deleted by AWS SAM should be removed manually to avoid incurring costs.
