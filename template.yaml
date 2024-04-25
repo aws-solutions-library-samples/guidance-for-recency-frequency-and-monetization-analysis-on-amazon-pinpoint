@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Amazon Pinpoint RFM Predictive Marketing solution.
+  This template (SO9428) installs the Guidance for Recency, Frequency & Monetization Analysis on Amazon Pinpoint.
 Parameters:
   PinpointRFMS3BucketName:
     Type: String
