@@ -1,4 +1,4 @@
-# Guidance for RFM Segmentation on Amazon Pinpoint
+# Guidance for Recency, Frequency & Monetization (RFM) Analysis on Amazon Pinpoint
 
 ## Table of Contents
 - [Overview](https://github.com/aws-solutions-library-samples/guidance-for-rfm-segmentation-on-amazon-pinpoint/tree/main?tab=readme-ov-file#overview)
